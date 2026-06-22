@@ -1,0 +1,4 @@
+interface:
+  display_name: "uutils Coreutils"
+  short_description: "Prefer uutils GNU tools on Windows"
+  default_prompt: "Use $uutils-coreutils when writing shell commands on Windows."
