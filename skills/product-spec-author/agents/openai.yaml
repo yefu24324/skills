@@ -1,0 +1,4 @@
+interface:
+  display_name: "Product Spec Author"
+  short_description: "Write clarified modular PRD revisions"
+  default_prompt: "Use $product-spec-author to investigate product evidence, stop for human clarification on blocking decisions, then write or rewrite a modular PRD revision and hand it to an independent reviewer."
