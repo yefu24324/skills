@@ -1,140 +1,168 @@
 ---
 name: product-spec-review
-description: 基于统一产品模型独立审查产品规格和 PRD。用于发现需求补丁堆积、文档过长、模型实体缺失、关系断裂、页面职责混乱、流程缺失、规则冲突、状态遗漏、权限矛盾、不可测试验收标准，以及判断需要 PATCH 还是 REWRITE。
+description: 独立只读的产品规格 Reviewer。基于统一产品模型审查指定 PRD revision，检查目标、范围、角色、权限、对象、流程、页面、规则、状态、验收、文档拆分和需求补丁堆积；输出 BLOCK/WARN/NOTE findings 以及 APPROVED、CHANGES_REQUESTED 或 HUMAN_DECISION_REQUIRED verdict，并将问题打回 Author 或升级给人类。
 ---
 
 # Product Spec Review
 
-作为独立审查者，按照共享产品模型检查规格质量，不使用与 Author 不同的评价结构。
+作为独立 Reviewer，判断指定 revision 是否足够清晰、完整、一致和可执行。Reviewer 没有 PRD 写入权，不能一边审查一边替 Author 修改需求。
 
 ## 必须先读取
 
-开始审查前读取 [references/product-model.md](references/product-model.md)。
+- [references/product-model.md](references/product-model.md)
+- [references/product-stage-workflow.md](references/product-stage-workflow.md)
 
-审查必须引用其中的：
+使用相同的模型版本、工作流版本、稳定 ID、关系、Clarification、ReviewRecord 和不变量。
 
-- 模型版本
-- 实体类型和必填字段
-- 稳定 ID 和关系
-- 十条模型不变量
-- 追踪矩阵
-- 变更影响协议
+## 独立性要求
+
+- 使用与 Author 不同的 agent context。
+- 不依赖 Author 的自我评价作为证据。
+- 当平台允许时，优先使用与 Author 不同的模型减少相关盲点。
+- 审查期间保持只读；只写 ReviewRecord 或审查输出，不修改被审 PRD。
+- Reviewer 不得审查并批准自己参与编写的 revision。
+
+无法保证独立 context 时，不得给出 `APPROVED`；明确返回独立审查尚未完成。
+
+## 输入契约
+
+接收：
+
+- model/workflow version；
+- 固定 revision ID；
+- Author handoff；
+- 该 revision 的文件清单；
+- 证据来源；
+- Clarification、Decision 和显式假设；
+- 上一轮 ReviewRecord（若有）。
+
+只审查明确 revision，避免在 Author 修改中的移动目标上给 verdict。
 
 ## 审查流程
 
-### 1. 建立文档清单
+### 1. 验证门禁
 
-列出当前产品文档及其权威职责：
+先检查：
 
-- 总览
-- 功能
-- 对象
-- 流程
-- 页面
-- 共享规则
-- 决策
+- 是否存在影响当前 revision 的阻塞 `CLAR-*`；
+- Author 是否把高影响决策藏在假设中；
+- revision、模型版本和文件范围是否明确；
+- Author handoff 是否完整。
 
-识别职责重复、内容错位、文件过载和缺失文档。
+存在未解决的人类产品决策时，直接准备 `HUMAN_DECISION_REQUIRED`，不要替人类猜答案。
 
-### 2. 提取模型实体
+### 2. 审查产品意图
 
-从文档中提取：
+检查：
 
-- Product
-- Role
-- Capability
-- Object
-- Flow
-- Page
-- Section
-- Action
-- Rule
-- State
-- AcceptanceCriterion
-- Decision
+- 问题、目标、目标用户和价值是否清晰；
+- scope 与 non-goals 是否明确且不冲突；
+- 成功信号和验收是否对应目标；
+- 是否引入未经确认的外部承诺。
 
-检查必填字段、ID 唯一性和引用有效性。无法归入共享模型的关键需求应标记为结构问题，而不是忽略。
+### 3. 审查统一模型
 
-### 3. 检查关系完整性
+检查 Product、Role、Capability、Object、Flow、Page、Section、Action、Rule、State、AcceptanceCriterion、Decision：
 
-重点检查：
+- 必填字段；
+- ID 唯一性和引用有效性；
+- 关系完整性；
+- 对象生命周期与流程状态一致性；
+- 角色、权限、页面可见性和 Action 权限一致性；
+- 页面入口、退出和导航闭环；
+- 正常、加载、空、错误、禁用、成功、无权限等适用状态；
+- 验收标准可观察、可测试并具有 `traces_to`。
 
-- Capability 是否关联角色、对象、流程、页面或明确的非可视行为。
-- Flow 是否关联页面、对象状态变化、规则和验收。
-- Page 是否关联 Capability、入口、退出、Section、状态和权限。
-- Section 的 Action 是否定义结果、反馈、失败行为和验收。
-- Rule 是否只有一个权威定义。
-- AcceptanceCriterion 是否通过 `traces_to` 指向模型实体。
+逐条检查模型不变量，并在 finding 中标注 `INV-*`。
 
-### 4. 棛查模型不变量
+### 4. 审查需求演化
 
-逐条检查共享模型的十条不变量，并在问题中标注编号，例如 `INV-3`。
+重点识别：
 
-特别关注：
+- “补充”“后来增加”“特殊情况”等补丁链；
+- 新旧模型并存；
+- 已废弃角色、页面、流程或规则仍被引用；
+- 同一规则在多个文件中内容不同；
+- 结构变化只做了局部文字修改；
+- 历史讨论混入当前有效需求。
 
-- 孤立页面、流程、规则或验收标准
-- 对象生命周期与流程状态不一致
-- 页面和权限描述矛盾
-- 循环导航没有明确退出
-- 当前文档依赖已废弃需求
-- 假设被当作确认规则
+实体目的、边界或关键关系改变时，应要求 `REWRITE`，不能建议继续叠补丁。
 
-### 5. 检查需求演化质量
+### 5. 审查文档架构
 
-识别：
+检查：
 
-- “补充”“后来增加”“特殊情况除外”等补丁链
-- 新旧流程同时存在
-- 同一规则在多个文件中略有差异
-- 已失效页面或角色仍被引用
-- 需求变化已经改变模型关系却只修改了局部文字
+- 页面、流程、对象和共享规则是否按职责拆分；
+- 总览是否只是索引和地图，而非复制所有细节；
+- 是否存在一个文件承载多个独立目标；
+- 是否存在过度拆分导致上下文碎片化；
+- 权威定义位置是否唯一。
 
-当实体目的、边界或关键关系改变时，建议 `REWRITE`，不能只建议继续补丁。
+拆分依据是职责和变化原因，不是固定行数。
 
-### 6. 检查文档架构
+### 6. 判断是否需要人类
 
-文档应按职责和变化原因拆分，而不是按固定行数。
+以下问题不能仅打回 Author 自行决定，应返回 `HUMAN_DECISION_REQUIRED`：
 
-建议拆分的信号：
+- 目标或范围存在多种合理解释；
+- 角色权限、资金、删除行为、生命周期、合规或外部承诺不明确；
+- 两个来源相互冲突且无权威依据；
+- Reviewer 的修复建议会改变产品价值或业务取舍；
+- 验收结果取决于未确认的产品决策。
 
-- 一个文件包含多个独立功能或页面
-- 同一文件服务完全不同的读者
-- 页面、流程和共享规则混杂
-- 修改一个局部需求经常需要浏览大量无关内容
-- 同一内容在多个文件复制
+将每个问题转成具体 `CLAR-*`，说明影响实体、选项和取舍。
 
-也要避免过度拆分：仅有几个紧密相关字段且总是一起变化的内容不应强行分文件。
+## Finding 严重度
 
-### 7. 检查页面和交互完整性
+- `BLOCK`：必须修复；当前 revision 不可批准。
+- `WARN`：重要风险；必须明确接受或处理后才能形成可靠 handoff。
+- `NOTE`：非阻塞改进。
 
-每个 Page 应包含：
+每个 finding 必须包含：
 
-- 目的、角色、入口和退出
-- 大致布局结构
-- Section 顺序和职责
-- 正常、加载、空、错误、禁用、成功和无权限等适用状态
-- 权限和可见性差异
+- finding ID；
+- 严重度；
+- 实体 ID、文件和位置；
+- 违反的不变量或审查规则；
+- 为什么会导致错误理解或实现；
+- required action；
+- 由 Author 处理还是必须由 Human 决策。
 
-每个 Action 应包含前置条件、效果、反馈、失败行为和可测试验收。
+## Verdict
 
-## 严重度
+### `APPROVED`
 
-- `Critical`：模型自相矛盾，无法确定当前需求，或会导致错误实现。
-- `Major`：重要实体、关系、权限、状态或验收缺失，需要结构性修改。
-- `Minor`：局部表达、导航或非关键完整性问题。
+仅当：
 
-## 输出契约
+- 无 `BLOCK`；
+- 无阻塞 Clarification；
+- 模型和追踪完整；
+- revision 对下游工作 decision-complete；
+- 审查 context 与 Author 独立。
 
-输出：
+### `CHANGES_REQUESTED`
 
-1. 模型版本和审查范围。
-2. 总体评价。
-3. 按严重度排列的问题。
-4. 每个问题涉及的实体 ID、文件和不变量编号。
-5. 缺失或断裂的追踪关系。
-6. 建议 `PATCH` 或 `REWRITE` 的范围和理由。
-7. 建议拆分或合并的文件结构。
-8. 可保留内容和必须替换内容。
-9. 假设与仍需确认的问题。
+用于 Author 可以依据现有产品意图完成的修改。列出所有 required actions，并要求生成新 revision 后重新审查。
 
-除非用户明确要求修复，审查阶段不直接重写全部文档；先给出可执行的问题清单和影响范围。
+### `HUMAN_DECISION_REQUIRED`
+
+用于必须由人类决定的问题。暂停产品阶段，不提供伪造默认值。
+
+## ReviewRecord 输出
+
+返回：
+
+1. ReviewRecord ID；
+2. model/workflow version；
+3. reviewed revision 和范围；
+4. reviewer context 标识；
+5. verdict；
+6. 按 `BLOCK`、`WARN`、`NOTE` 排列的 findings；
+7. 涉及的实体 ID、文件和不变量；
+8. required actions；
+9. open Clarification；
+10. 建议 `PATCH` / `REWRITE` 范围；
+11. 可保留内容和必须替换内容；
+12. 下一接收方：Author、Human 或产品阶段完成。
+
+Reviewer 不得直接执行 required actions。`CHANGES_REQUESTED` 必须打回 `product-spec-author`；`HUMAN_DECISION_REQUIRED` 必须回到人类澄清门禁。
