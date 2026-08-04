@@ -11,8 +11,9 @@ description: AI 产品架构师与产品阶段编排入口。用于建立统一�
 
 - [references/product-model.md](references/product-model.md)
 - [references/product-stage-workflow.md](references/product-stage-workflow.md)
+- [references/page-structure.md](references/page-structure.md)
 
-三个 Skill 必须使用相同的模型版本、工作流版本、稳定 ID、关系、不变量和 verdict。不得自行发明另一套交接格式。
+三个 Skill 必须使用相同的模型版本、工作流版本、页面结构标准版本、稳定 ID、关系、不变量和 verdict。不得自行发明另一套交接格式。
 
 ## 角色边界
 
@@ -83,7 +84,7 @@ DISCOVERY
 
 仅在阻塞 Clarification 全部解决后，将以下 handoff 交给 `product-spec-author`：
 
-- 模型与工作流版本；
+- 模型、工作流和页面结构标准版本；
 - revision ID；
 - 当前模型快照；
 - 变更和影响实体 ID；
@@ -92,6 +93,8 @@ DISCOVERY
 - 允许保留的非阻塞假设；
 - `PATCH` / `REWRITE` 决策；
 - 目标文件和拆分要求。
+
+对于每个用户可见 Page，Author 必须按照页面结构标准生成 ASCII 页面结构图。特殊交互使用简短文字补充即可。不得在需求阶段规定颜色、字体、像素尺寸、间距或其他视觉样式。
 
 Author 完成后，产品阶段仍未结束，必须进入独立审阅。
 
@@ -103,13 +106,15 @@ Author 完成后，产品阶段仍未结束，必须进入独立审阅。
 - `CHANGES_REQUESTED`；
 - `HUMAN_DECISION_REQUIRED`。
 
+Reviewer 必须将缺失或无法理解的 ASCII 页面结构视为阻塞问题；不应因为缺少颜色、精确尺寸或像素级视觉说明而打回需求。
+
 不能把 Reviewer 的修改建议直接当作已执行结果。
 
 ### 6. 处理 verdict
 
 #### `APPROVED`
 
-确认无阻塞 Clarification、模型不变量与追踪关系通过，然后将产品阶段标记为完成。重大变更还应向人类展示批准 revision 和审阅摘要，再进入设计或开发。
+确认无阻塞 Clarification、模型不变量、页面结构门禁与追踪关系通过，然后将产品阶段标记为完成。重大变更还应向人类展示批准 revision 和审阅摘要，再进入设计或开发。
 
 #### `CHANGES_REQUESTED`
 
@@ -133,6 +138,9 @@ Author 完成后，产品阶段仍未结束，必须进入独立审阅。
 - 没有阻塞 Clarification 处于 `OPEN`；
 - 当前 PRD 不包含已废弃需求；
 - 产品模型不变量和追踪矩阵通过；
+- 每个用户可见 Page 都有与 Section 对应的可理解 ASCII 页面结构图；
+- 特殊交互已用必要且简短的文字消除歧义；
+- 需求没有混入颜色、字号、像素尺寸等视觉设计实现细节；
 - Author handoff、Clarification 和 ReviewRecord 已保存在仓库或明确交付。
 
 ## 输出状态
@@ -140,7 +148,7 @@ Author 完成后，产品阶段仍未结束，必须进入独立审阅。
 每次输出明确给出：
 
 - 当前阶段状态；
-- model/workflow version；
+- model/workflow/page-structure version；
 - 当前 revision；
 - 阻塞 Clarification；
 - Author 或 Reviewer 的下一接收方；
