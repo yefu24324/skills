@@ -19,6 +19,9 @@ SHARED_REFERENCES = {
     "product-stage-workflow.md": re.compile(
         r"^Workflow version: `([^`]+)`$", re.MULTILINE
     ),
+    "page-structure.md": re.compile(
+        r"^Standard version: `([^`]+)`$", re.MULTILINE
+    ),
 }
 
 
