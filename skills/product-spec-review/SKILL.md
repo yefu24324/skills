@@ -11,8 +11,9 @@ description: 独立只读的产品规格 Reviewer。基于统一产品模型审�
 
 - [references/product-model.md](references/product-model.md)
 - [references/product-stage-workflow.md](references/product-stage-workflow.md)
+- [references/page-structure.md](references/page-structure.md)
 
-使用相同的模型版本、工作流版本、稳定 ID、关系、Clarification、ReviewRecord 和不变量。
+使用相同的模型版本、工作流版本、页面结构标准版本、稳定 ID、关系、Clarification、ReviewRecord 和不变量。
 
 ## 独立性要求
 
@@ -28,7 +29,7 @@ description: 独立只读的产品规格 Reviewer。基于统一产品模型审�
 
 接收：
 
-- model/workflow version；
+- model/workflow/page-structure version；
 - 固定 revision ID；
 - Author handoff；
 - 该 revision 的文件清单；
@@ -75,7 +76,34 @@ description: 独立只读的产品规格 Reviewer。基于统一产品模型审�
 
 逐条检查模型不变量，并在 finding 中标注 `INV-*`。
 
-### 4. 审查需求演化
+### 4. 审查 ASCII 页面结构
+
+每个用户可见 Page 必须包含 ASCII `layout_structure`。按共享页面结构标准检查：
+
+- ASCII 是否展示页面外壳或导航上下文；
+- 是否能识别主要功能区域；
+- Section 的上下顺序、左右并列和父子嵌套是否清楚；
+- ASCII 中的 Section ID 或名称是否与 Section 表一致；
+- 主要操作是否能定位到具体区域；
+- 对流程有影响的标签页、抽屉、弹窗或浮层是否被表示或用文字说明；
+- 页面状态是否说明影响整个页面还是具体 Section；
+- 选择某一区域后更新的目标区域是否清楚。
+
+以下情况必须产生 `BLOCK`：
+
+- 用户可见 Page 没有 ASCII 页面结构；
+- ASCII 只是“上下布局”“左右布局”等无法映射 Section 的模糊短句；
+- 无法理解主要 Section 的顺序、嵌套、并列或浮层关系；
+- ASCII 和 Section 表互相矛盾；
+- 主要操作找不到所属功能区域；
+- 特殊交互改变页面结构，但既没有画出也没有文字描述；
+- 状态没有说明变化发生在哪个区域。
+
+特殊交互可以使用简短文字描述，不要求像素级原型或长篇交互稿。优先检查是否说明 `触发 -> 系统响应 -> 结果或反馈`。
+
+颜色、字体、字号、精确尺寸、间距、圆角、阴影和其他视觉样式不属于产品需求交付内容。缺少这些内容绝不是 defect；反而应对把大量视觉实现细节混入 PRD 的情况提出 `WARN`，要求回归产品结构和行为。
+
+### 5. 审查需求演化
 
 重点识别：
 
@@ -88,7 +116,7 @@ description: 独立只读的产品规格 Reviewer。基于统一产品模型审�
 
 实体目的、边界或关键关系改变时，应要求 `REWRITE`，不能建议继续叠补丁。
 
-### 5. 审查文档架构
+### 6. 审查文档架构
 
 检查：
 
@@ -100,7 +128,7 @@ description: 独立只读的产品规格 Reviewer。基于统一产品模型审�
 
 拆分依据是职责和变化原因，不是固定行数。
 
-### 6. 判断是否需要人类
+### 7. 判断是否需要人类
 
 以下问题不能仅打回 Author 自行决定，应返回 `HUMAN_DECISION_REQUIRED`：
 
@@ -137,6 +165,7 @@ description: 独立只读的产品规格 Reviewer。基于统一产品模型审�
 - 无 `BLOCK`；
 - 无阻塞 Clarification；
 - 模型和追踪完整；
+- 每个用户可见 Page 的 ASCII 页面结构通过标准；
 - revision 对下游工作 decision-complete；
 - 审查 context 与 Author 独立。
 
@@ -153,7 +182,7 @@ description: 独立只读的产品规格 Reviewer。基于统一产品模型审�
 返回：
 
 1. ReviewRecord ID；
-2. model/workflow version；
+2. model/workflow/page-structure version；
 3. reviewed revision 和范围；
 4. reviewer context 标识；
 5. verdict；
@@ -162,7 +191,8 @@ description: 独立只读的产品规格 Reviewer。基于统一产品模型审�
 8. required actions；
 9. open Clarification；
 10. 建议 `PATCH` / `REWRITE` 范围；
-11. 可保留内容和必须替换内容；
-12. 下一接收方：Author、Human 或产品阶段完成。
+11. ASCII 页面结构审查结果；
+12. 可保留内容和必须替换内容；
+13. 下一接收方：Author、Human 或产品阶段完成。
 
 Reviewer 不得直接执行 required actions。`CHANGES_REQUESTED` 必须打回 `product-spec-author`；`HUMAN_DECISION_REQUIRED` 必须回到人类澄清门禁。
