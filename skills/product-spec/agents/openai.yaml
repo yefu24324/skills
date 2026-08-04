@@ -1,4 +1,4 @@
 interface:
-  display_name: "Product Spec"
-  short_description: "Write requirements with page and interaction design"
-  default_prompt: "Use $product-spec to create or refactor product specifications with flows, pages, layouts, states, rules, and acceptance criteria."
+  display_name: "Product Spec Orchestrator"
+  short_description: "Clarify, author, review, and approve PRDs"
+  default_prompt: "Use $product-spec to run the product stage: investigate first, ask humans about blocking ambiguities, dispatch an author to write the PRD, then require an independent reviewer verdict and rework loop before approval."
