@@ -1,4 +1,4 @@
 interface:
-  display_name: "Product Spec"
-  short_description: "Write requirements with page and interaction design"
-  default_prompt: "Use $product-spec to create or refactor product specifications with flows, pages, layouts, states, rules, and acceptance criteria."
+  display_name: "AI Product Architect"
+  short_description: "Design modular product specs with pages and flows"
+  default_prompt: "Use $product-spec as an AI product architect to design, refactor, and review product specifications with modular documents, page structures, interaction flows, states, rules, and acceptance criteria."
