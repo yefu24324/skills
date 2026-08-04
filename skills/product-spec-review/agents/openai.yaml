@@ -1,0 +1,4 @@
+interface:
+  display_name: "Product Spec Reviewer"
+  short_description: "Independently approve or reject PRD revisions"
+  default_prompt: "Use $product-spec-review in a separate read-only context to review a fixed PRD revision, return BLOCK/WARN/NOTE findings, and verdict APPROVED, CHANGES_REQUESTED, or HUMAN_DECISION_REQUIRED without rewriting the PRD."
