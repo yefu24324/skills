@@ -1,0 +1,4 @@
+interface:
+  display_name: "Product Spec"
+  short_description: "Write requirements with page and interaction design"
+  default_prompt: "Use $product-spec to create or refactor product specifications with flows, pages, layouts, states, rules, and acceptance criteria."
