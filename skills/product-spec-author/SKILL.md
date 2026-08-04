@@ -11,8 +11,9 @@ description: 产品规格 Author。基于统一产品模型创建、拆分和重
 
 - [references/product-model.md](references/product-model.md)
 - [references/product-stage-workflow.md](references/product-stage-workflow.md)
+- [references/page-structure.md](references/page-structure.md)
 
-使用其中的模型版本、工作流版本、实体、稳定 ID、关系、Clarification、ReviewRecord 和不变量。
+使用其中的模型版本、工作流版本、页面结构标准版本、实体、稳定 ID、关系、Clarification、ReviewRecord 和不变量。
 
 ## 输入契约
 
@@ -94,13 +95,77 @@ docs/product/
 
 每个实体满足共享模型必填字段。
 
-页面至少覆盖：目的、角色、入口、退出、布局结构、Section、页面状态、权限、规则和验收。
+### 页面结构
+
+每个用户可见 Page 都必须在 `layout_structure` 中使用 ASCII 描述页面结构。ASCII 是页面结构的主要交付形式，不是可选装饰。
+
+ASCII 至少表达：
+
+- 页面外壳或导航上下文；
+- 主要功能区域；
+- Section 的上下顺序、左右并列和父子嵌套；
+- 主要操作所在区域；
+- 对流程有影响的标签页、抽屉、弹窗或浮层；
+- 选择某一区域后会更新或替换的目标区域。
+
+使用 Section ID 或稳定名称，使 ASCII 与后续 Section 表一一对应。例如：
+
+```text
++--------------------------------------------------+
+| SEC-PAGE-HEADER                                  |
+| Breadcrumb  Page title              [Primary]   |
++--------------------------------------------------+
+| SEC-FILTERS                                      |
++----------------------+---------------------------+
+| SEC-NAVIGATION       | SEC-MAIN-CONTENT          |
+|                      |                           |
++----------------------+---------------------------+
+| SEC-PAGINATION                                   |
++--------------------------------------------------+
+```
+
+图只需要表达相对结构，不做像素级线框图。
+
+ASCII 之后必须提供 Section 表，至少包括：Section ID、职责、内容、Action、局部状态、可见性或权限规则。
+
+### 特殊交互
+
+ASCII 难以表达的特殊交互使用简短文字补充即可，优先采用：
+
+`触发 -> 系统响应 -> 结果或反馈`
+
+例如：
+
+```text
+- 选择列表项后在当前页面打开详情抽屉。
+- 关闭抽屉后保留筛选条件和滚动位置。
+- 详情加载失败时保持抽屉打开并提供重试操作。
+```
+
+普通点击、输入和提交不需要写成长篇交互稿。只有跨页面、存在重要分支或改变业务对象状态时，才单独创建 Flow 文档。
+
+### 页面规格范围
+
+页面还必须覆盖：目的、角色、入口、退出、页面状态、权限、规则和验收。
 
 Section 至少覆盖：位置、职责、内容、Action、局部状态和可见性。
 
 Action 至少覆盖：前置条件、效果、反馈、失败行为、权限、规则和验收。
 
 所有验收标准必须可观察、可测试，并通过稳定 ID 追踪到产品实体。
+
+### 视觉设计排除项
+
+产品需求阶段不规定：
+
+- UI 颜色、主题和装饰风格；
+- 字体、字号和字重；
+- 精确宽高、边距、间距和像素坐标；
+- 圆角、阴影、边框、动画曲线和图标风格；
+- 精确响应式断点；
+- 前端组件实现方式。
+
+可以写“左侧导航 + 主内容区”，不要写“左侧区域宽 280px、背景色 #FFFFFF”。只有当尺寸或视觉属性本身属于功能、合规或可访问性要求时，才作为例外说明。
 
 ## 6. 响应审阅打回
 
@@ -119,7 +184,7 @@ Action 至少覆盖：前置条件、效果、反馈、失败行为、权限、�
 
 每次 revision 完成后返回：
 
-1. model/workflow version；
+1. model/workflow/page-structure version；
 2. revision ID 和上一个 revision；
 3. `PATCH` / `REWRITE`；
 4. 新增、修改、删除的实体 ID；
@@ -128,8 +193,9 @@ Action 至少覆盖：前置条件、效果、反馈、失败行为、权限、�
 7. resolved Clarification、Decision 和显式假设；
 8. 创建、重写、删除的文件；
 9. 上轮 required actions 的处理结果；
-10. 不变量检查结果；
-11. 已知风险和非阻塞 open items；
-12. 状态 `READY_FOR_REVIEW`。
+10. 页面 ASCII 结构检查结果；
+11. 不变量检查结果；
+12. 已知风险和非阻塞 open items；
+13. 状态 `READY_FOR_REVIEW`。
 
 Author 不得输出 `APPROVED`，也不得声明产品阶段完成。完成 revision 后必须交给 `product-spec-review`。
