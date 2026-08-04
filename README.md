@@ -18,6 +18,9 @@ When adding new personal skills, place them under `skills/<skill-name>/`. Skill 
 
 ## Included Skills
 
+- `git-commit-staged`: Analyze staged changes, generate a Chinese Conventional Commit message, and commit only after confirmation.
+- `git-rebase-pull`: Fetch a selected remote branch and safely rebase the current branch onto it.
+- `git-push-feature`: Push HEAD to a new personal `feature/<username>` branch and open the Gitea compare page.
 - `uutils-coreutils`: Prefer uutils/coreutils and related POSIX-style tools on Windows when writing or running common shell, file, and text-processing commands.
 
 ## Install With `npx skills`

@@ -18,6 +18,9 @@ skills/
 
 ## 已包含技能
 
+- `git-commit-staged`：分析暂存区变更，生成中文 Conventional Commit 信息，并在确认后提交。
+- `git-rebase-pull`：获取选定的远程分支，并将当前分支安全地 rebase 到其最新提交。
+- `git-push-feature`：将 HEAD 推送到新的个人 `feature/<username>` 分支，并打开 Gitea compare 页面。
 - `uutils-coreutils`：在 Windows 上编写或执行常见 shell/file/text 命令时，优先使用 uutils/coreutils 及相关 POSIX 风格工具，减少 PowerShell 专有写法。
 
 ## 使用 `npx skills` 安装

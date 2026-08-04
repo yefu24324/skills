@@ -16,11 +16,9 @@ REQUIRED_REFERENCES = {
     "product-model.md": r"^模型版本：`([^`]+)`$",
     "product-stage-workflow.md": r"^工作流版本：`([^`]+)`$",
     "page-structure.md": r"^规范版本：`([^`]+)`$",
+    "flow-structure.md": r"^规范版本：`([^`]+)`$",
     "change-and-rewrite.md": r"^规则版本：`([^`]+)`$",
-    "benchmark-driven-expansion.md": r"^方法版本：`([^`]+)`$",
-    "multi-agent-dispatch.md": r"^协议版本：`([^`]+)`$",
-    "prd-quality-gates.md": r"^门禁版本：`([^`]+)`$",
-    "product-spec-template.md": None,
+    "wish-driven-expansion.md": r"^方法版本：`([^`]+)`$",
 }
 LINK_PATTERN = re.compile(r"\[[^\]]+\]\(([^)#]+\.md)(?:#[^)]+)?\)")
 HAN_PATTERN = re.compile(r"[\u3400-\u4dbf\u4e00-\u9fff]")
@@ -33,6 +31,37 @@ LEGACY_ENGLISH_MARKERS = (
     "## Roles",
     "## Review rules",
 )
+
+# 这些片段共同构成人类可读页面规格的最低契约，防止规范退回内部代号驱动的旧格式。
+HUMAN_READABLE_CONTRACT = {
+    "page-structure.md": (
+        "[PascalCaseComponent] <中文用途>",
+        "[Input] <按名称搜索工作项>",
+        "页面用途",
+        "主要任务",
+        "操作结果",
+        "状态与恢复",
+        "不在正式需求正文、组件树或功能说明中生成",
+    ),
+    "flow-structure.md": (
+        "节点显示文本全部使用清楚、自然的中文",
+        "流程目的",
+        "异常恢复",
+        "不添加 `FLOW-*`、`PAGE-*`、`ACT-*`、`RULE-*`、`STATE-*`",
+    ),
+}
+
+# Author 和 Reviewer 都必须执行可读性门禁，不能只由共享参考资料单方面声明。
+ROLE_READABILITY_CONTRACT = {
+    "product-spec-author": (
+        "[大驼峰英文组件] <中文用途>",
+        "不得生成 `CAP-*`、`PAGE-*`、`SEC-*`、`ACT-*`、`RULE-*`",
+    ),
+    "product-spec-review": (
+        "[大驼峰英文组件] <中文用途>",
+        "需要读者自行解码的内部代号",
+    ),
+}
 
 
 def report_error(message: str) -> None:
@@ -123,11 +152,46 @@ def validate_markdown_links() -> bool:
     return valid
 
 
+def validate_human_readable_contract() -> bool:
+    """校验组件树格式、自然中文正文和角色门禁没有在后续修改中丢失。"""
+
+    valid = True
+
+    for name, required_fragments in HUMAN_READABLE_CONTRACT.items():
+        path = REFERENCE_ROOT / name
+        if not path.is_file():
+            continue
+        text = path.read_text(encoding="utf-8")
+        for fragment in required_fragments:
+            if fragment not in text:
+                report_error(
+                    f"{path.relative_to(ROOT)} 缺少人类可读契约：{fragment}"
+                )
+                valid = False
+
+    for skill_name, required_fragments in ROLE_READABILITY_CONTRACT.items():
+        path = SKILLS_ROOT / skill_name / "SKILL.md"
+        if not path.is_file():
+            continue
+        text = path.read_text(encoding="utf-8")
+        for fragment in required_fragments:
+            if fragment not in text:
+                report_error(
+                    f"{path.relative_to(ROOT)} 缺少人类可读门禁：{fragment}"
+                )
+                valid = False
+
+    if valid:
+        print("通过：页面与流程的人类可读契约完整")
+    return valid
+
+
 def main() -> int:
     checks = (
         validate_skill_structure(),
         validate_references(),
         validate_markdown_links(),
+        validate_human_readable_contract(),
     )
     if all(checks):
         print("product-spec 三技能套件校验通过")

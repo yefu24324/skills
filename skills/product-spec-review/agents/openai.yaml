@@ -1,4 +1,4 @@
 interface:
   display_name: "产品规格审阅"
-  short_description: "独立审阅固定产品规格版本，定位缺陷并给出门禁结论记录"
-  default_prompt: "使用 $product-spec-review 在全新只读 context 中审阅固定 PRD，检查多 Agent 仲裁、主动扩写、人类确认和质量门禁，输出 findings 与唯一 verdict。"
+  short_description: "独立审阅固定产品规格并给出明确门禁结论"
+  default_prompt: "使用 $product-spec-review 在全新只读 context 中审阅固定 PRD revision，输出 findings 与唯一 verdict。"
