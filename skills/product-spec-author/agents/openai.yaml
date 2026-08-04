@@ -1,4 +1,4 @@
 interface:
-  display_name: "Product Spec Author"
-  short_description: "Write clarified modular PRD revisions"
-  default_prompt: "Use $product-spec-author to investigate product evidence, stop for human clarification on blocking decisions, then write or rewrite a modular PRD revision and hand it to an independent reviewer."
+  display_name: "产品规格编写"
+  short_description: "编写、拆分或重写可追踪且可独立审阅的产品规格版本交付"
+  default_prompt: "使用 $product-spec-author 将已统一仲裁并确认的多 Agent 探索结论编写成单一、可追踪的模块化 PRD revision，再交给全新独立 Reviewer。"

@@ -1,116 +1,109 @@
-# Page Structure Description Standard
+# 页面结构描述规范
 
-Standard version: `1.0`
+规范版本：`2.0`
 
-This standard is shared by `product-spec`, `product-spec-author`, and `product-spec-review`.
+## 目标
 
-## Purpose
+清楚表达产品层面的页面信息架构和功能区域，让产品、设计、开发、测试和审阅者理解页面意图。本规范不定义颜色、字体、像素尺寸、间距、阴影、圆角、图标风格等视觉设计。
 
-Describe the product-level information architecture and functional regions of a page clearly enough for humans, designers, developers, and reviewers to understand the intended structure.
+## 核心规则
 
-This is not a visual design specification. It does not define colors, typography, pixel dimensions, spacing, shadows, border radius, icon style, or other aesthetic details.
+每个用户可见 Page 必须在 `layout_structure` 中提供 ASCII 结构图。ASCII 是页面结构的主要表达；补充文字只解释难以用空间关系表示的行为。
 
-## Primary rule
+非可视能力不需要页面图，但必须明确声明为非可视。
 
-Every user-visible Page must include an ASCII structure diagram in `layout_structure`.
+## ASCII 必须表达
 
-The ASCII diagram is the primary representation of page structure. Supporting prose should explain only behavior that is difficult to show spatially.
+使用 Section ID 或稳定名称表示：
 
-A non-visual capability does not require a page diagram, but it must be explicitly declared non-visual.
+- 页面外壳或相关导航上下文；
+- 主要功能区域；
+- 从上到下的顺序；
+- 左右并列和父子嵌套；
+- 对流程有实际影响的标签页、抽屉、弹窗或浮层；
+- 主要操作与重要次要操作所在区域；
+- 选择某一区域后被替换或更新的目标区域。
 
-## What the ASCII diagram must show
+表达相对关系即可，不追求像素级线框图。
 
-Use Section IDs or stable section names to show:
-
-- the page shell or surrounding navigation context when relevant;
-- the major functional regions;
-- top-to-bottom ordering;
-- side-by-side relationships;
-- parent-child nesting;
-- tabs, drawers, dialogs, popovers, or other overlays when they materially affect the flow;
-- the location of primary and secondary actions;
-- which region is replaced or updated by a selection when this is important.
-
-Do not attempt pixel-perfect wireframes. Relative relationships are enough.
-
-## Recommended form
+## 推荐形式
 
 ```text
 +--------------------------------------------------+
-| Page Header                                      |
-| [Breadcrumb]  Title                 [Primary]    |
+| SEC-PAGE-HEADER                                  |
+| 面包屑  页面标题                    [主要操作]   |
 +--------------------------------------------------+
-| Filter Section                                   |
+| SEC-FILTERS 筛选区                               |
 +----------------------+---------------------------+
-| Navigation Section   | Main Content Section      |
-|                      |                           |
+| SEC-NAVIGATION      | SEC-MAIN-CONTENT          |
+| 导航区               | 主内容区                  |
 |                      |                           |
 +----------------------+---------------------------+
-| Pagination / Footer                              |
+| SEC-PAGINATION 分页区                            |
 +--------------------------------------------------+
 ```
 
-A hierarchy-style ASCII description is also acceptable when it communicates the structure more clearly:
+当层级更清楚时，可以使用树形结构：
 
 ```text
-PAGE-ORDER-DETAIL
-├── SEC-PAGE-HEADER
-│   ├── Breadcrumb
-│   ├── Order summary
-│   └── Primary actions
-├── SEC-ORDER-CONTENT
-│   ├── SEC-ORDER-INFO
-│   └── SEC-PAYMENT-INFO
-└── SEC-ACTIVITY-TIMELINE
+PAGE-ORDER-DETAIL 订单详情页
+├── SEC-PAGE-HEADER 页面头部
+│   ├── 面包屑
+│   ├── 订单摘要
+│   └── 主要操作
+├── SEC-ORDER-CONTENT 订单内容
+│   ├── SEC-ORDER-INFO 订单信息
+│   └── SEC-PAYMENT-INFO 支付信息
+└── SEC-ACTIVITY-TIMELINE 活动时间线
 ```
 
-## Special interactions
+## 特殊交互
 
-Describe special interactions with short prose after the ASCII diagram. Use the minimum detail needed to remove ambiguity:
+在 ASCII 后用最少文字消除歧义，优先采用“触发 -> 系统响应 -> 结果或反馈”：
 
-```text
-- Selecting a result opens the detail drawer without leaving the list.
-- Closing the drawer preserves the current filters and scroll position.
-- A failed detail request keeps the drawer open and shows a retry action.
-```
+- 选择列表项 -> 当前页面打开详情抽屉 -> 列表筛选与滚动位置保持不变。
+- 关闭抽屉 -> 返回原列表区域 -> 用户继续之前的浏览位置。
+- 详情加载失败 -> 抽屉保持打开 -> 显示失败反馈与重试操作。
 
-Prefer a simple `trigger -> response -> result/feedback` description.
+普通点击、输入和提交无需扩写成长篇交互稿。只有跨越多个页面、存在重要分支或改变业务对象状态时，才单独创建 Flow 文档。
 
-Do not turn ordinary interactions into long sequence specifications. Create a separate Flow document only when the interaction crosses multiple pages, has important branches, or changes business object state.
+## 配套内容
 
-## Required supporting sections
+ASCII 后必须提供：
 
-After the ASCII diagram, provide:
+1. Section 表：Section ID、职责、内容、Action、状态、可见性或权限；
+2. ASCII 无法充分表达时的特殊交互说明；
+3. 页面级与 Section 级状态及其影响区域；
+4. 页面入口和退出路径；
+5. 通过稳定 ID 关联的验收标准。
 
-1. a Section table with Section ID, responsibility, content, actions, states, and visibility or permission rules;
-2. special interaction notes only where the ASCII structure is insufficient;
-3. page-level and section-level state behavior;
-4. entry and exit paths;
-5. acceptance criteria linked by stable IDs.
+## 页面状态
 
-## Out of scope
+按适用情况定义加载、空、错误、禁用、成功和无权限状态。明确状态作用于整个页面还是单个 Section，以及状态期间哪些操作仍可用。不要为了凑齐清单而虚构不适用状态。
 
-Do not specify these in a product requirement unless they are themselves a functional or regulatory requirement:
+## 排除项
 
-- colors or themes;
-- font family, font size, or font weight;
-- exact width, height, margin, padding, or pixel coordinates;
-- border, shadow, radius, animation curve, or visual decoration;
-- exact responsive breakpoints;
-- component implementation details.
+除非视觉属性本身属于功能、合规或可访问性要求，产品规格不要规定：
 
-Statements such as “left navigation and main content area” are appropriate. Statements such as “the left panel is 280 px wide and uses #FFFFFF” are not.
+- 颜色、主题和装饰风格；
+- 字体、字号和字重；
+- 精确宽高、边距、间距和像素坐标；
+- 边框、阴影、圆角、动画曲线和图标风格；
+- 精确响应式断点；
+- 前端组件实现方式。
 
-## Review rules
+“左侧导航 + 主内容区”是合适的产品结构；“左侧宽 280px，背景色为 #FFFFFF”不是。
 
-A user-visible Page receives a `BLOCK` finding when:
+## 审阅阻塞条件
 
-- no ASCII structure diagram is present;
-- the diagram does not map to the declared Sections;
-- the order, nesting, adjacency, or overlay relationship of major Sections cannot be understood;
-- primary actions cannot be located in a functional region;
-- a special interaction changes page structure but is neither shown nor described;
-- page or section states do not identify which region changes;
-- the page description is mostly visual styling rather than product structure and behavior.
+遇到以下任一情况，Reviewer 必须提出 `BLOCK`：
 
-A diagram may remain intentionally approximate. Lack of colors, exact dimensions, or pixel-level styling is never a defect in a product specification.
+- 用户可见 Page 没有 ASCII 结构图；
+- 图不能映射到声明的 Section；
+- 主要 Section 的顺序、嵌套、并列或浮层关系无法理解；
+- 主要操作无法定位到具体功能区域；
+- 改变页面结构的特殊交互既未画出也未说明；
+- 页面或 Section 状态没有说明受影响区域；
+- ASCII 与 Section 表互相矛盾。
+
+结构图可以有意保持近似。缺少颜色、精确尺寸或像素级样式绝不是产品规格缺陷。

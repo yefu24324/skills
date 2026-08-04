@@ -1,4 +1,4 @@
 interface:
-  display_name: "Product Spec Orchestrator"
-  short_description: "Clarify, author, review, and approve PRDs"
-  default_prompt: "Use $product-spec to run the product stage: investigate first, ask humans about blocking ambiguities, dispatch an author to write the PRD, then require an independent reviewer verdict and rework loop before approval."
+  display_name: "产品规格编排"
+  short_description: "调查产品证据，协调规格编写、独立审阅与返工门禁机制"
+  default_prompt: "使用 $product-spec 按复杂度自动派发只读 subagent，并行调查项目与知名产品交互，汇总候选方案并与我确认，再由单一 Author 编写和全新 Reviewer 审阅。"

@@ -1,201 +1,98 @@
 ---
 name: product-spec-author
-description: 产品规格 Author。基于统一产品模型创建、拆分和重构模块化 PRD；先调查项目证据并识别高影响歧义，遇到无法推导的产品决策时返回 CLARIFICATION_REQUIRED 询问人类，解决后编写 revision，并将结果交给独立 product-spec-review 审阅。适用于页面、流程、规则、状态和验收规格，以及重大需求变化后的 REWRITE。
+description: 产品规格唯一编写角色。用于接收 product-spec 已统一仲裁、澄清并经人类确认的多 Agent 探索 handoff，将已接受的标杆交互原则写成当前场景的模块化 PRD revision，覆盖能力、对象、流程、页面、状态、规则和验收。不得机械拼接 subagent 报告、采纳未确认竞品功能或批准自己的产物；高影响未决问题返回 CLARIFICATION_REQUIRED。
 ---
 
-# Product Spec Author
+# 产品规格编写
 
-负责把已澄清的产品意图写成当前有效、可追踪、可审阅的产品规格。Author 拥有 PRD 写入权，但没有批准权。
+把已澄清的产品意图写成当前有效、可追踪、可独立审阅的 revision。拥有产品规格写入权，没有批准权。
 
-## 必须先读取
+## 读取套件规范
 
-- [references/product-model.md](references/product-model.md)
-- [references/product-stage-workflow.md](references/product-stage-workflow.md)
-- [references/page-structure.md](references/page-structure.md)
+开始前必须直接读取同级套件中的：
 
-使用其中的模型版本、工作流版本、页面结构标准版本、实体、稳定 ID、关系、Clarification、ReviewRecord 和不变量。
+- [产品模型](../product-spec/references/product-model.md)
+- [产品阶段工作流](../product-spec/references/product-stage-workflow.md)
 
-## 输入契约
+涉及用户可见页面时读取 [页面结构规范](../product-spec/references/page-structure.md)。执行变更时读取 [变更与重写规则](../product-spec/references/change-and-rewrite.md)。创建新规格时按需使用 [产品规格模板](../product-spec/references/product-spec-template.md)。
 
-优先接收：
+handoff 包含标杆产品对比或主动扩写提案时，读取 [标杆产品对比与主动扩写](../product-spec/references/benchmark-driven-expansion.md)。
 
-- 当前 revision 和模型快照；
-- 新需求或变更说明；
-- 已确认事实及来源；
-- 已解决 Clarification 与 Decision；
-- 显式非阻塞假设；
-- `PATCH` / `REWRITE` 判断；
-- 受影响实体和文件；
-- 上一轮 ReviewRecord 的 required actions。
+handoff 来自多个探索 subagent 时，读取 [多 Agent 自动派发协议](../product-spec/references/multi-agent-dispatch.md)，只使用 Orchestrator 已统一 ID、解决冲突并经人类确认的汇总，不自行拼接原始报告。
 
-缺少模型时，先从现有文档、代码和测试提取，不要直接自由生成一份孤立 PRD。
+创建或重写 revision 时读取 [优秀产品规格质量门禁](../product-spec/references/prd-quality-gates.md)，在交付审阅前执行完整 Author 自检；局部修改只自检受影响门禁及其关系传播范围。
 
-## 1. 证据优先的需求分析
+三个技能必定共同安装。不要检查共享文件或其他角色是否存在，不要复制共享规范，也不要创建降级流程。
 
-先检查项目内能够回答的问题：
+## 验证输入
 
-- 当前用户、权限和业务对象；
-- 已有流程、页面和导航；
-- 当前规则、状态和验收；
-- 决策记录、历史约束和术语；
-- 代码或测试体现的当前行为。
+确认 handoff 包含：共享规范版本、revision ID、请求与变更类型、当前模型或其位置、影响实体与文件、探索档位、`EXP-*` 汇总与冲突处置、证据来源、标杆记录及其时效等级、`PROP-*` 状态、已解决的 `Clarification`/`Decision`、允许的低影响假设，以及上一轮 required actions（若有）。
 
-将结论标为 `CONFIRMED`、`INFERRED`、`ASSUMPTION` 或 `CONFLICT`。不得把推断写成已确认业务规则。
+若某项信息可以从仓库获得，先自行调查。若缺少的信息构成无法由证据决定的高影响产品取舍，创建阻塞 `CLAR-*`，返回 `CLARIFICATION_REQUIRED`，不要继续编写受影响的最终规格。
 
-## 2. 澄清门禁
+## 编写 revision
 
-发现无法由证据解决、且可能改变目标、范围、角色、权限、对象生命周期、主流程、页面职责、业务规则、金额、删除行为、合规、外部承诺或验收结果的问题时：
+1. 按 `CONFIRMED`、`INFERRED`、`ASSUMPTION`、`CONFLICT` 整理依据，不把推断伪装成业务事实。
+2. 依据共享规则确认 `CREATE`、`PATCH` 或 `REWRITE`，列出新增、修改、删除的实体与关系。
+3. 按产品职责拆分文档：总览承载范围与地图，对象承载含义与生命周期，流程承载跨页面行为，页面承载区域与交互，共享规则只保留一个权威定义。
+4. 为每个实体填写产品模型要求的字段，并使用稳定且唯一的 ID。
+5. 让角色、权限、对象状态、流程分支、页面可见性、Action、Rule 和 AcceptanceCriterion 相互一致。
+6. 对 `REWRITE` 范围写出完整当前版本并删除失效描述；不要保留“补充”“后来增加”“特殊情况”等补丁链。
+7. 重新检查引用、不变量和追踪矩阵。
 
-1. 创建阻塞 `CLAR-*`。
-2. 返回状态 `CLARIFICATION_REQUIRED`。
-3. 每个问题只询问一个产品决策。
-4. 优先一次给出最多五个问题。
-5. 已知时提供具体选项、取舍、推荐和影响实体。
-6. 停止编写受影响的最终规格，等待人类回答。
+对主动扩写内容只执行以下转换：
 
-不得用 `[待确认]` 占位后仍声称 PRD 已完成，也不得自行选择高影响默认值。
+- `ACCEPTED`：转化为当前场景的产品实体、规则和验收；
+- `MODIFIED`：只采用人类修改后的版本；
+- `REJECTED`：不得进入当前规格，可留在 Decision 中说明不采用；
+- `PROPOSED` 或 `DEFERRED`：不得写成当前需求。
 
-低影响细节可作为显式假设继续，但必须进入 handoff，并可被 Reviewer 挑战。
+产品规格必须写清当前用户任务和行为，不要写“采用某产品模式”作为要求。标杆产品名称与研究依据保留在 Benchmark、Decision 或 handoff 中；正式页面和验收必须脱离品牌名也能独立理解和测试。
 
-## 3. 分析变更
+多个 ExplorationReport 只提供证据与候选方案。若报告使用不同术语、ID 或互斥方案，以 Orchestrator handoff 和人类 Decision 为准；仍存在未仲裁冲突时返回 `CLARIFICATION_REQUIRED`，不得自行投票选择。
 
-列出新增、修改、删除的实体和关系，并判断：
+不得把当前规格写成历史记录。历史原因、被否决方案和替代关系应进入 Decision 或版本历史。
 
-- `PATCH`：文案、局部字段、单个校验、次要 UI 状态。
-- `REWRITE`：角色、能力边界、主流程、对象生命周期、页面主要职责、权限、导航、共享规则或系统边界改变。
+## 编写页面规格
 
-选择 `REWRITE` 时，完整重写受影响实体的当前版本，删除失效文本，不在旧逻辑后追加“补充”“后来”“特殊情况”。
+对每个用户可见 Page：
 
-## 4. 设计模块化文档
+1. 用 ASCII `layout_structure` 表达页面外壳、主要 Section、顺序、并列、嵌套、主要操作和影响流程的浮层关系。
+2. 让图中的 Section ID 与 Section 表一一对应。
+3. 在 Section 表中说明职责、内容、Action、局部状态、可见性或权限。
+4. 对 ASCII 难以表达的行为，用最短的“触发 -> 系统响应 -> 结果或反馈”补充。
+5. 明确入口、退出、页面级与局部状态、权限、规则和验收。
 
-推荐：
+非可视能力必须显式标记为非可视。不要规定颜色、字体、精确像素、间距、阴影、圆角、图标风格、动画曲线、响应式断点或前端组件实现，除非它本身是功能、合规或可访问性要求。
 
-```text
-docs/product/
-├── index.md
-├── features/<feature>/
-├── objects/<object>.md
-├── flows/<flow>.md
-├── pages/<page>.md
-├── shared/<topic>.md
-├── clarifications.md
-├── reviews/
-└── decisions/
-```
-
-拆分规则：
-
-- 一个页面一份页面规格。
-- 一个跨页面或非可视主流程一份流程规格。
-- 一个共享规则只有一个权威定义。
-- 总览仅保留范围、能力地图、页面地图和追踪入口。
-- 按职责、生命周期、读者和变化原因拆分，不按任意行数机械切割。
-
-## 5. 编写 revision
-
-每个实体满足共享模型必填字段。
-
-### 页面结构
-
-每个用户可见 Page 都必须在 `layout_structure` 中使用 ASCII 描述页面结构。ASCII 是页面结构的主要交付形式，不是可选装饰。
-
-ASCII 至少表达：
-
-- 页面外壳或导航上下文；
-- 主要功能区域；
-- Section 的上下顺序、左右并列和父子嵌套；
-- 主要操作所在区域；
-- 对流程有影响的标签页、抽屉、弹窗或浮层；
-- 选择某一区域后会更新或替换的目标区域。
-
-使用 Section ID 或稳定名称，使 ASCII 与后续 Section 表一一对应。例如：
-
-```text
-+--------------------------------------------------+
-| SEC-PAGE-HEADER                                  |
-| Breadcrumb  Page title              [Primary]   |
-+--------------------------------------------------+
-| SEC-FILTERS                                      |
-+----------------------+---------------------------+
-| SEC-NAVIGATION       | SEC-MAIN-CONTENT          |
-|                      |                           |
-+----------------------+---------------------------+
-| SEC-PAGINATION                                   |
-+--------------------------------------------------+
-```
-
-图只需要表达相对结构，不做像素级线框图。
-
-ASCII 之后必须提供 Section 表，至少包括：Section ID、职责、内容、Action、局部状态、可见性或权限规则。
-
-### 特殊交互
-
-ASCII 难以表达的特殊交互使用简短文字补充即可，优先采用：
-
-`触发 -> 系统响应 -> 结果或反馈`
-
-例如：
-
-```text
-- 选择列表项后在当前页面打开详情抽屉。
-- 关闭抽屉后保留筛选条件和滚动位置。
-- 详情加载失败时保持抽屉打开并提供重试操作。
-```
-
-普通点击、输入和提交不需要写成长篇交互稿。只有跨页面、存在重要分支或改变业务对象状态时，才单独创建 Flow 文档。
-
-### 页面规格范围
-
-页面还必须覆盖：目的、角色、入口、退出、页面状态、权限、规则和验收。
-
-Section 至少覆盖：位置、职责、内容、Action、局部状态和可见性。
-
-Action 至少覆盖：前置条件、效果、反馈、失败行为、权限、规则和验收。
-
-所有验收标准必须可观察、可测试，并通过稳定 ID 追踪到产品实体。
-
-### 视觉设计排除项
-
-产品需求阶段不规定：
-
-- UI 颜色、主题和装饰风格；
-- 字体、字号和字重；
-- 精确宽高、边距、间距和像素坐标；
-- 圆角、阴影、边框、动画曲线和图标风格；
-- 精确响应式断点；
-- 前端组件实现方式。
-
-可以写“左侧导航 + 主内容区”，不要写“左侧区域宽 280px、背景色 #FFFFFF”。只有当尺寸或视觉属性本身属于功能、合规或可访问性要求时，才作为例外说明。
-
-## 6. 响应审阅打回
+## 处理审阅意见
 
 收到 `CHANGES_REQUESTED` 时：
 
-1. 不修改原 ReviewRecord。
-2. 逐条映射 `BLOCK` 和 accepted `WARN` 到实体与文件。
-3. 判断每项修复是 `PATCH` 还是 `REWRITE`。
-4. 生成新 revision `rN+1`。
-5. 在 handoff 中说明每个 required action 如何处理。
-6. 将新 revision 重新交给独立 Reviewer。
+1. 保留原 ReviewRecord，不覆盖审阅证据。
+2. 将每个 `BLOCK` 和已接受的 `WARN` 映射到实体、文件和规则。
+3. 分别判断修复属于 `PATCH` 还是 `REWRITE`。
+4. 创建新 revision，不原地伪装成旧 revision 已通过。
+5. 在 handoff 中逐项说明 required action 的处理结果。
 
-当 Review 指出 `HUMAN_DECISION_REQUIRED` 时，不得自行处理；创建阻塞 Clarification 并返回人类门禁。
+收到 `HUMAN_DECISION_REQUIRED` 时，返回阻塞澄清门禁，不替人类作出产品决定。
 
-## 7. Author handoff
+## 输出 Author handoff
 
-每次 revision 完成后返回：
+revision 完成后输出：
 
-1. model/workflow/page-structure version；
-2. revision ID 和上一个 revision；
-3. `PATCH` / `REWRITE`；
-4. 新增、修改、删除的实体 ID；
-5. 关系和追踪矩阵变化；
-6. 使用的证据来源；
-7. resolved Clarification、Decision 和显式假设；
-8. 创建、重写、删除的文件；
-9. 上轮 required actions 的处理结果；
-10. 页面 ASCII 结构检查结果；
-11. 不变量检查结果；
-12. 已知风险和非阻塞 open items；
-13. 状态 `READY_FOR_REVIEW`。
+1. 共享规范版本；
+2. 当前与上一 revision ID；
+3. `CREATE`、`PATCH` 或 `REWRITE`；
+4. 新增、修改、删除的实体 ID 和文件；
+5. 关系及追踪矩阵变化；
+6. 使用的 `EXP-*`、证据、标杆记录、冲突处置、`PROP-*` 处置、已解决决策和显式假设；
+7. 上轮 required actions 的处理结果；
+8. 页面结构检查结果（适用时）；
+9. 模型不变量检查结果；
+10. 优秀产品规格质量门禁自检结果；
+11. 已知风险和非阻塞 open items；
+12. 状态 `READY_FOR_REVIEW`；
+13. 下一接收方 `product-spec-review`。
 
-Author 不得输出 `APPROVED`，也不得声明产品阶段完成。完成 revision 后必须交给 `product-spec-review`。
+不得输出 `APPROVED`，不得声明产品阶段完成。
