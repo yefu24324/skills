@@ -1,127 +1,147 @@
 ---
 name: product-spec
-description: AI 产品架构师入口 Skill。用于判断产品规格任务类型，建立统一产品模型，并协调 product-spec-author 和 product-spec-review。适用于 PRD、feature spec、页面设计说明、信息架构、需求变更分析、产品文档拆分，以及需要维护产品目标、角色、能力、对象、流程、页面、规则和验收标准一致性的任务。
+description: AI 产品架构师与产品阶段编排入口。用于建立统一产品模型，先从项目证据中澄清需求，在高影响歧义无法判断时暂停并询问人类，然后协调 product-spec-author 编写或重构模块化 PRD，再由独立只读的 product-spec-review 审阅、批准或打回，直到产品规格可交付。
 ---
 
 # Product Spec
 
-作为 AI 产品架构师入口，维护产品当前有效的整体模型，而不是简单生成一份文档。
+作为产品阶段 Orchestrator，维护产品当前有效模型，并控制人类澄清、PRD 编写、独立审阅和打回重写的完整闭环。
 
-## 统一产品模型
+## 必须先读取
 
-处理任何非简单文案修改前，先读取 [references/product-model.md](references/product-model.md)。
+- [references/product-model.md](references/product-model.md)
+- [references/product-stage-workflow.md](references/product-stage-workflow.md)
 
-三个 Skill 必须使用其中相同的：
+三个 Skill 必须使用相同的模型版本、工作流版本、稳定 ID、关系、不变量和 verdict。不得自行发明另一套交接格式。
 
-- 实体类型和必填字段
-- 稳定 ID
-- 实体关系
-- 模型不变量
-- 追踪矩阵
-- 变更影响协议
+## 角色边界
 
-不得自行发明另一套角色、页面、流程或规则结构。
+- `product-spec`：发现、影响分析、阶段状态、路由和门禁。
+- `product-spec-author`：唯一负责写入当前 PRD 和产品规格的角色。
+- `product-spec-review`：独立、只读地审查指定 revision；不得修改正在审查的 PRD。
+- 人类产品负责人：解决无法从项目证据推导出的产品决策。
 
-## 职责
+Author 和 Reviewer 必须使用不同 agent context。Reviewer 不得批准自己参与编写的 revision。
 
-- 识别用户是在创建、修改、重构还是审查产品规格。
-- 建立或读取当前产品模型快照。
-- 判断变更属于 `PATCH` 或 `REWRITE`。
-- 计算受影响的模型实体、关系和文档。
-- 路由到 `product-spec-author` 或 `product-spec-review`。
-- 检查两个专业 Skill 的结果是否符合共享模型。
-- 防止需求演化成为历史补丁堆积或超长单体 PRD。
-
-## 入口流程
-
-### 1. 建立模型快照
-
-从现有文档和代码中提取：
-
-- 已确认的模型实体及稳定 ID
-- 实体之间的引用关系
-- 已确认需求、假设和待确认项
-- 当前文档目录和权威定义位置
-
-信息不足时可以保留显式假设，不得把推测写成已确认规则。
-
-### 2. 判断变化类型
-
-`PATCH` 通常只影响实体内部局部字段，例如文案、单个展示字段、局部校验或次要界面状态。
-
-以下变化通常为 `REWRITE`：
-
-- 角色目标或权限边界变化
-- 能力边界变化
-- 主流程或分支结构变化
-- 核心对象生命周期变化
-- 页面主要职责、入口或导航变化
-- 共享规则或系统边界变化
-
-`REWRITE` 表示完整重写受影响实体的当前版本，并删除已失效描述，不表示重写整个产品。
-
-### 3. 计算影响范围
-
-沿共享模型中的双向关系检查影响：
+## 产品阶段状态机
 
 ```text
-Role <-> Capability <-> Object / Flow / Page
-Flow <-> Page / Object state
-Page <-> Section <-> Action
-Action <-> Rule / AcceptanceCriterion
-Decision <-> affected entities
+DISCOVERY
+  -> CLARIFICATION_REQUIRED -> WAITING_FOR_HUMAN -> DISCOVERY
+  -> AUTHORING
+  -> IN_REVIEW
+       -> APPROVED
+       -> CHANGES_REQUESTED -> AUTHORING
+       -> HUMAN_DECISION_REQUIRED -> WAITING_FOR_HUMAN -> AUTHORING
 ```
 
-输出受影响实体 ID 和建议修改文件，不能只说“相关页面需要调整”。
+## 工作流程
 
-### 4. 路由
+### 1. 先探索，后提问
 
-#### 创建、修改或重构
+先读取已有需求、页面规格、决策、代码、测试、术语和相关研究，建立当前产品模型快照。
 
-使用 `product-spec-author`：
+分离：
 
-- 新产品或新功能规格
-- 页面和流程设计
-- 模块化 PRD 编写
-- 重大需求变化后的重新建模
-- 单体 PRD 拆分为可维护文档
+- 已确认事实及来源；
+- 可由仓库证据推导的结论；
+- 显式假设；
+- 相互矛盾的信息；
+- 必须由人类决定的问题。
 
-#### 独立审查
+不要询问可以通过合理检索得到答案的问题。
 
-使用 `product-spec-review`：
+### 2. 人类澄清门禁
 
-- 检查共享模型字段和关系是否完整
-- 检查补丁堆积和失效需求
-- 检查孤立页面、规则冲突和状态遗漏
-- 检查文档拆分和权威定义位置
-- 判断需要 `PATCH` 还是 `REWRITE`
+当不明确内容可能改变以下任一项时，创建阻塞 `Clarification` 并停止受影响规格的编写：
 
-## 专业 Skill 交接契约
+- 产品目标、范围或非目标；
+- 用户角色或权限；
+- 能力边界；
+- 核心对象归属或生命周期；
+- 主流程、分支或失败结果；
+- 页面职责、导航或可见性；
+- 业务规则、金额、删除行为、合规、外部承诺或验收结果。
 
-### Author 必须返回
+向人类提问时：
 
-- 模型版本
-- 新增、修改、删除的实体 ID
-- 关系变化和影响范围
-- 更新后的文件清单
-- 追踪矩阵变化
-- 假设与待确认项
-- 不变量检查结果
+1. 一个问题只对应一个产品决策。
+2. 每轮优先询问最多五个高影响问题。
+3. 已知时提供具体选项、取舍和有证据的推荐。
+4. 说明该问题会影响哪些实体或文件。
+5. 提问后结束当前阶段，不要一边等待答案一边把猜测写成最终需求。
 
-### Review 必须返回
+低影响细节可作为显式假设继续，例如临时文案或非约束性视觉偏好；权限、资金、删除、生命周期、合规和承诺不得靠假设决定。
 
-- 模型版本
-- 按严重度排列的问题
-- 违反的不变量编号
-- 涉及的实体 ID 和文件
-- `PATCH` 或 `REWRITE` 建议
-- 可保留内容和必须替换内容
+### 3. 变更与影响分析
 
-## 核心原则
+识别新增、修改、删除的实体和关系，判断 `PATCH` 或 `REWRITE`，沿共享模型双向关系计算影响范围。
 
-1. 当前产品规格只描述当前有效模型。
-2. 历史理由进入 `decisions/`，不污染当前需求。
-3. 共享规则只保留一个权威定义，其他文档通过 ID 引用。
-4. 文档按职责和变化原因拆分，不按任意行数机械切割。
-5. 页面、流程、状态、权限和验收必须能够相互追踪。
-6. 不允许 Author 与 Review 使用不同的概念或字段定义。
+角色、能力边界、主流程、对象生命周期、页面主要职责、权限、导航或系统边界变化时，优先 `REWRITE` 受影响实体的完整当前版本，而不是追加补丁。
+
+### 4. 派发 Author
+
+仅在阻塞 Clarification 全部解决后，将以下 handoff 交给 `product-spec-author`：
+
+- 模型与工作流版本；
+- revision ID；
+- 当前模型快照；
+- 变更和影响实体 ID；
+- 已确认事实及来源；
+- 已解决 Clarification 和 Decision；
+- 允许保留的非阻塞假设；
+- `PATCH` / `REWRITE` 决策；
+- 目标文件和拆分要求。
+
+Author 完成后，产品阶段仍未结束，必须进入独立审阅。
+
+### 5. 派发 Reviewer
+
+将固定 revision、Author handoff 和相关证据交给单独的 `product-spec-review` context。Reviewer 使用只读权限并给出：
+
+- `APPROVED`；
+- `CHANGES_REQUESTED`；
+- `HUMAN_DECISION_REQUIRED`。
+
+不能把 Reviewer 的修改建议直接当作已执行结果。
+
+### 6. 处理 verdict
+
+#### `APPROVED`
+
+确认无阻塞 Clarification、模型不变量与追踪关系通过，然后将产品阶段标记为完成。重大变更还应向人类展示批准 revision 和审阅摘要，再进入设计或开发。
+
+#### `CHANGES_REQUESTED`
+
+保存 ReviewRecord，将所有 `BLOCK` 和被接受的 `WARN` 作为 required actions 交回 Author，生成新 revision，再由独立 Reviewer 重新审阅。
+
+默认最多三轮。相同阻塞问题连续三轮未解决时，停止循环并升级给人类。
+
+#### `HUMAN_DECISION_REQUIRED`
+
+立即暂停。将 Reviewer 指出的产品决策转成阻塞 Clarification，询问人类；答案记录后再交回 Author。
+
+## 直接审查请求
+
+用户只要求审查已有 PRD 时，可以直接派发 `product-spec-review`，但 Reviewer 仍然只读。修复工作必须作为后续 Author revision 进行。
+
+## 完成条件
+
+只有同时满足以下条件，才可声明产品阶段完成：
+
+- 最新 ReviewRecord verdict 为 `APPROVED`；
+- 没有阻塞 Clarification 处于 `OPEN`；
+- 当前 PRD 不包含已废弃需求；
+- 产品模型不变量和追踪矩阵通过；
+- Author handoff、Clarification 和 ReviewRecord 已保存在仓库或明确交付。
+
+## 输出状态
+
+每次输出明确给出：
+
+- 当前阶段状态；
+- model/workflow version；
+- 当前 revision；
+- 阻塞 Clarification；
+- Author 或 Reviewer 的下一接收方；
+- 是否允许进入下一个产品阶段。
