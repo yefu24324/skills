@@ -1,4 +1,4 @@
 interface:
-  display_name: "Git Rebase 拉取"
+  display_name: "git-rebase-pull"
   short_description: "选择远程目标分支，以 rebase 安全更新当前分支并处理冲突"
   default_prompt: "使用 $git-rebase-pull 获取远程更新，并将当前分支 rebase 到我选择的远程分支。"

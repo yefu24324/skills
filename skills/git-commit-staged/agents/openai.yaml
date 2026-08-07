@@ -1,4 +1,4 @@
 interface:
-  display_name: "Git 暂存区提交"
+  display_name: "git-commit-staged"
   short_description: "分析 Git 暂存区变更，生成中文规范提交并在用户确认后执行"
   default_prompt: "使用 $git-commit-staged 分析当前暂存区，生成合适的中文 Conventional Commit 信息，并在我确认后提交。"
